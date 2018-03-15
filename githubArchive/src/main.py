@@ -20,7 +20,7 @@ def main():
     logger.info("Run githubImporter")
     args = checkParams()
     importer = GithubImporter(args.url, args.dateFormat, args.dest)
-    importer.setBroker(RabbitMq(conf["broker"]))
+    importer.setBroker(RabbitMq(conf["broker"]["archives"]))
     importer.setCallURL()
     importer.work()
     logger.info("End githubImporter")

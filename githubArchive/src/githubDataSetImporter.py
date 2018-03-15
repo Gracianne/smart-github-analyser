@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Feb 20 16:27:47 2018
-@author: alex
-"""
+
 import os
 import io
 import urllib.request
