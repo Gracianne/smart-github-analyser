@@ -1,58 +1,105 @@
 version: "3"
 services:
   githubarchive:
+    container_name: githubarchive
     build:
       context: githubArchive/
       dockerfile: Dockerfile
     volumes:
       - ./githubArchive/src:/data
+  commit-simulator:
+    container_name: commit-simulator
+    build:
+      context: commit-simulator
+      dockerfile: Dockerfile
+    tty: true
+    environment:
+      multiplier: 1
+  git-api:
+    container_name: github-api
+    build:
+      context: ./git-api
+      dockerfile: Dockerfile
+    ports:
+      - 80:80
+    environment:
+      FLASK_APP: server.py
+      LC_ALL: C.UTF-8
+      LANG: C.UTF-8
+    volumes:
+      - ./git-api/src:/data
+    tty: true
+  frontend:
+    container_name: front
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - 81:80
+  broker-consumer:
+    container_name: broker-consumer
+    build:
+      context: githubArchive/
+      dockerfile: DockerfileConsumer
+    volumes:
+      - ./githubArchive/src:/data
+    restart: always
   datastorage:
-    image: mongo
+    container_name: datastorage
+    build:
+      context: .
+      dockerfile: ./datastorage/Dockerfile
     ports:
       - 27017:27017
       - 27018:27018
       - 27019:27019
     volumes:
-      - ./share:/tmp/share
-      - mongodata:/data/db
+      - ./datastorage/share:/tmp/share
+      - mongo-storage:/data/db
   rabbitmq:
+    container_name: rabbitmq
     image: rabbitmq:3-management
     ports:
       - 15672:15672
     volumes:
       - ./rabbitManagement/rabbitmq.config:/etc/rabbitmq/rabbitmq.config:ro
       - ./rabbitManagement/definitions.json:/etc/rabbitmq/definitions.json:ro
-  listener-rabbitmq:
-    build:
-      context: githubArchive
-      dockerfile: Dockerfile
-  search:
-    image: elasticsearch
+  elasticsearch:
+    container_name: search
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.2
+    environment:
+      - "ES_JAVA_OPTIONS=-Xms1g -Xmx1g"
     ports:
       - 9200:9200
-    volumes:
-      - ./dbs/esdata1:/usr/share/elasticsearch/data
-    tty: true
   kibana:
-    image: kibana
+    container_name: kibana
+    image: docker.elastic.co/kibana/kibana-oss:6.2.2
     ports:
       - 5601:5601
-  recommandation:
+    environment:
+      - ELASTICSEARCH_URL=http://search:9200
+    tty: true
+  neo4j:
+    container_name: recommandation
     build:
       context: .
       dockerfile: ./recommandation/Dockerfile
+    environment:
+      - NEO4J_AUTH=none
     ports:
       - 7474:7474
       - 7687:7687
     volumes:
       - ./share:/tmp/share
       - ./dbs/neo4j/data:/data
-      - ./dbs/neo4j/plugins:/plugins
+      - ./recommandation/plugins:/var/lib/neo4j/plugins
     tty: true
-  prediction:
+  jupyter-python-spark:
+    container_name: jupyter
     build:
       context: .
       dockerfile: ./prediction/Dockerfile
+    container_name: prediction
     ports:
       - 8889:8889
       - 4040:4040
@@ -60,4 +107,4 @@ services:
       - ./prediction/data:/home/jovyan/data
     tty: true
 volumes:
-  mongodata:
+  mongo-storage:

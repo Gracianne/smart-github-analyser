@@ -1,0 +1,21 @@
+{
+  "name": "commit-simulator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "commitGenerator.js",
+  "scripts": {
+    "start-dev": "pm2 start commitSimulator.js --watch --no-daemon --name='Commit-simulator'",
+    "start": "pm2 start commitSimulator.js -i4 --name='Commit-simulator'",
+    "stop": "pm2 stop Commit-simulator"
+  },
+  "dependencies": {
+    "got": "^8.3.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
